@@ -121,3 +121,5 @@ PR 和 Issue 的范例参考：
 [https://github.com/Yao-class-cpp-studio/battle_game_2024/pull/1](https://github.com/Yao-class-cpp-studio/battle_game_2024/pull/1)
 
 [https://github.com/Yao-class-cpp-studio/battle_game_2024/issues/2](https://github.com/Yao-class-cpp-studio/battle_game_2024/issues/2)
+
+Smile face :)
