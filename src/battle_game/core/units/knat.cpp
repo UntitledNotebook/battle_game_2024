@@ -11,82 +11,63 @@ uint32_t tank_body_model_index = 0xffffffffu;
 uint32_t tank_turret_model_index = 0xffffffffu;
 }  // namespace
 
-Knat::Knat(GameCore *game_core, uint32_t id, uint32_t player_id)
+Tank::Tank(GameCore *game_core, uint32_t id, uint32_t player_id)
     : Unit(game_core, id, player_id) {
-    if (!~tank_body_model_index) {
-        auto mgr = AssetsManager::GetInstance();
-        {
-            /* Tank Body - Improved with Rounded Edges and More Detail */
-            std::vector<ObjectVertex> body_vertices = {
-                {{-0.8f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Top Left
-                {{-0.6f, 0.6f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Top Left Rounded
-                {{0.6f, 0.6f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Top Right Rounded
-                {{0.8f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Top Right
-                {{-0.8f, -1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Bottom Left
-                {{-0.6f, -0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Bottom Left Rounded
-                {{0.6f, -0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Bottom Right Rounded
-                {{0.8f, -1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Bottom Right
-                {{-0.4f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Front Left
-                {{0.4f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Front Right
-                {{-0.4f, 0.6f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Front Left Rounded
-                {{0.4f, 0.6f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}}, // Front Right Rounded
-            };
-
-            std::vector<uint32_t> body_indices = {
-                0, 1, 2, 0, 2, 3, // Top
-                4, 5, 6, 4, 6, 7, // Bottom
-                8, 9, 10, 8, 10, 11, // Front
-                0, 1, 5, 0, 5, 4, // Left Side
-                1, 2, 6, 1, 6, 5, // Left Side Rounded
-                2, 3, 7, 2, 7, 6, // Right Side
-                3, 0, 4, 3, 4, 7  // Back
-            };
-
-            tank_body_model_index = mgr->RegisterModel(body_vertices, body_indices);
-        }
-
-        {
-            /* Tank Turret - Improved with Smoother Edges and More Detail */
-            std::vector<ObjectVertex> turret_vertices;
-            std::vector<uint32_t> turret_indices;
-            const int precision = 60;
-            const float inv_precision = 1.0f / float(precision);
-
-            // Turret Base (Circular)
-            for (int i = 0; i < precision; i++) {
-                auto theta = (float(i) + 0.5f) * inv_precision;
-                theta *= glm::pi<float>() * 2.0f;
-                auto sin_theta = std::sin(theta);
-                auto cos_theta = std::cos(theta);
-                turret_vertices.push_back({{sin_theta * 0.4f, cos_theta * 0.4f},
-                                             {0.0f, 0.0f},
-                                             {0.7f, 0.7f, 0.7f, 1.0f}});
-                turret_indices.push_back(i);
-                turret_indices.push_back((i + 1) % precision);
-            }
-
-            // Turret Top (Square)
-            turret_vertices.push_back({{-0.2f, 0.6f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
-            turret_vertices.push_back({{0.2f, 0.6f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
-            turret_vertices.push_back({{-0.2f, 0.8f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
-            turret_vertices.push_back({{0.2f, 0.8f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
-            turret_indices.push_back(precision);
-            turret_indices.push_back(precision + 1);
-            turret_indices.push_back(precision + 2);
-            turret_indices.push_back(precision + 1);
-            turret_indices.push_back(precision + 2);
-            turret_indices.push_back(precision + 3);
-
-            // Connect Base to Top
-            for (int i = 0; i < precision; i++) {
-                turret_indices.push_back(i);
-                turret_indices.push_back((i + 1) % precision);
-                turret_indices.push_back(precision);
-            }
-
-            tank_turret_model_index = mgr->RegisterModel(turret_vertices, turret_indices);
-        }
+  if (!~tank_body_model_index) {
+    auto mgr = AssetsManager::GetInstance();
+    {
+      /* Tank Body */
+      tank_body_model_index = mgr->RegisterModel(
+          {
+              {{-0.8f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+              {{-0.8f, -1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+              {{0.8f, 0.8f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+              {{0.8f, -1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+              // distinguish front and back
+              {{0.6f, 1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+              {{-0.6f, 1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
+          },
+          {0, 1, 2, 1, 2, 3, 0, 2, 5, 2, 4, 5});
     }
+
+    {
+      /* Tank Turret */
+      std::vector<ObjectVertex> turret_vertices;
+      std::vector<uint32_t> turret_indices;
+      const int precision = 60;
+      const float inv_precision = 1.0f / float(precision);
+      for (int i = 0; i < precision; i++) {
+        auto theta = (float(i) + 0.5f) * inv_precision;
+        theta *= glm::pi<float>() * 2.0f;
+        auto sin_theta = std::sin(theta);
+        auto cos_theta = std::cos(theta);
+        turret_vertices.push_back({{sin_theta * 0.5f, cos_theta * 0.5f},
+                                   {0.0f, 0.0f},
+                                   {0.7f, 0.7f, 0.7f, 1.0f}});
+        turret_indices.push_back(i);
+        turret_indices.push_back((i + 1) % precision);
+        turret_indices.push_back(precision);
+      }
+      turret_vertices.push_back(
+          {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{-0.1f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{0.1f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{-0.1f, 1.2f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{0.1f, 1.2f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_indices.push_back(precision + 1 + 0);
+      turret_indices.push_back(precision + 1 + 1);
+      turret_indices.push_back(precision + 1 + 2);
+      turret_indices.push_back(precision + 1 + 1);
+      turret_indices.push_back(precision + 1 + 2);
+      turret_indices.push_back(precision + 1 + 3);
+      tank_turret_model_index =
+          mgr->RegisterModel(turret_vertices, turret_indices);
+    }
+  }
 }
 
 void Knat::Render() {
@@ -154,12 +135,12 @@ void Knat::TurretRotate(float rotate_angular_speed) {
       float mouse_direction_ = 0.0f;
       float rotation_offset = kSecondPerTick * rotate_angular_speed * GetSpeedScale();
       if (diff.x > 0.0f) {
-        mouse_direction = std::atan(diff.y / diff.x);
-        if (diff.y < 0.0f) { mouse_direction += glm::pi<float>() * 2.0f; }
+        mouse_direction_ = std::atan(diff.y / diff.x);
+        if (diff.y < 0.0f) { mouse_direction_ += glm::pi<float>() * 2.0f; }
       } else if (diff.x < 0.0f) {
-        mouse_direction = std::atan(diff.y / diff.x) + glm::pi<float>();
+        mouse_direction_ = std::atan(diff.y / diff.x) + glm::pi<float>();
       } else {
-        mouse_direction = diff.y > 0.0f ? glm::pi<float>() * 0.5f : glm::pi<float>() * 1.5f;
+        mouse_direction_ = diff.y > 0.0f ? glm::pi<float>() * 0.5f : glm::pi<float>() * 1.5f;
       }
     }
   }
