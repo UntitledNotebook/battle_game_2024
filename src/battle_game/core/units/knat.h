@@ -18,7 +18,7 @@ class Knat : public Unit {
 
   float turret_rotation_{0.0f};
   float momentum_{0.0f}, rotation_momentum_{0.0f};
-  const float mass_{0.6f}, rotation_mass_{0.3f};
+  const float mass_{0.98f}, rotation_mass_{0.95f};
   uint32_t fire_count_down_{0};
   uint32_t mine_count_down_{0};
 };
