@@ -11,7 +11,7 @@ uint32_t tank_body_model_index = 0xffffffffu;
 uint32_t tank_turret_model_index = 0xffffffffu;
 }  // namespace
 
-Tank::Tank(GameCore *game_core, uint32_t id, uint32_t player_id)
+Knat::Knat(GameCore *game_core, uint32_t id, uint32_t player_id)
     : Unit(game_core, id, player_id) {
   if (!~tank_body_model_index) {
     auto mgr = AssetsManager::GetInstance();
@@ -51,19 +51,33 @@ Tank::Tank(GameCore *game_core, uint32_t id, uint32_t player_id)
       turret_vertices.push_back(
           {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
       turret_vertices.push_back(
-          {{-0.1f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+          {{0.1f, 1.4f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{0.2f, 1.4f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
       turret_vertices.push_back(
           {{0.1f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
       turret_vertices.push_back(
-          {{-0.1f, 1.2f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+          {{0.2f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
       turret_vertices.push_back(
-          {{0.1f, 1.2f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+          {{-0.1f, 1.4f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{-0.2f, 1.4f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{-0.1f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
+      turret_vertices.push_back(
+          {{-0.2f, 0.0f}, {0.0f, 0.0f}, {0.7f, 0.7f, 0.7f, 1.0f}});
       turret_indices.push_back(precision + 1 + 0);
       turret_indices.push_back(precision + 1 + 1);
       turret_indices.push_back(precision + 1 + 2);
       turret_indices.push_back(precision + 1 + 1);
       turret_indices.push_back(precision + 1 + 2);
       turret_indices.push_back(precision + 1 + 3);
+      turret_indices.push_back(precision + 1 + 4);
+      turret_indices.push_back(precision + 1 + 5);
+      turret_indices.push_back(precision + 1 + 6);
+      turret_indices.push_back(precision + 1 + 5);
+      turret_indices.push_back(precision + 1 + 6);
+      turret_indices.push_back(precision + 1 + 7);
       tank_turret_model_index =
           mgr->RegisterModel(turret_vertices, turret_indices);
     }
@@ -132,15 +146,24 @@ void Knat::TurretRotate(float rotate_angular_speed) {
     if (glm::length(diff) < 1e-4) {
       turret_rotation_ = rotation_;
     } else {
-      float mouse_direction_ = 0.0f;
+      float mouse_direction = 0.0f;
       float rotation_offset = kSecondPerTick * rotate_angular_speed * GetSpeedScale();
       if (diff.x > 0.0f) {
-        mouse_direction_ = std::atan(diff.y / diff.x);
-        if (diff.y < 0.0f) { mouse_direction_ += glm::pi<float>() * 2.0f; }
+        mouse_direction = std::atan(diff.y / diff.x);
+        if (diff.y < 0.0f) { mouse_direction += glm::pi<float>() * 2.0f; }
       } else if (diff.x < 0.0f) {
-        mouse_direction_ = std::atan(diff.y / diff.x) + glm::pi<float>();
+        mouse_direction = std::atan(diff.y / diff.x) + glm::pi<float>();
       } else {
-        mouse_direction_ = diff.y > 0.0f ? glm::pi<float>() * 0.5f : glm::pi<float>() * 1.5f;
+        mouse_direction = diff.y > 0.0f ? glm::pi<float>() * 0.5f : glm::pi<float>() * 1.5f;
+      }
+      float turret_direction = turret_rotation_ + glm::pi<float>() * 0.5f;
+      if (turret_direction > glm::pi<float>() * 2.0f) {
+        turret_direction -= glm::pi<float>() * 2.0f;
+      }
+      if (mouse_direction > turret_direction) {
+        turret_rotation_ += rotation_offset;
+      } else {
+        turret_rotation_ -= rotation_offset;
       }
     }
   }
@@ -154,12 +177,15 @@ void Knat::Fire() {
       if (input_data.mouse_button_down[GLFW_MOUSE_BUTTON_LEFT]) {
         auto velocity = Rotate(glm::vec2{0.0f, 20.0f}, turret_rotation_);
         GenerateBullet<bullet::CannonBall>(
-            position_ + Rotate({0.0f, 1.2f}, turret_rotation_),
+            position_ + Rotate({0.15f, 1.4f}, turret_rotation_),
+            turret_rotation_, GetDamageScale(), velocity);
+         GenerateBullet<bullet::CannonBall>(
+            position_ + Rotate({-0.15f, 1.4f}, turret_rotation_),
             turret_rotation_, GetDamageScale(), velocity);
         fire_count_down_ = kTickPerSecond;  // Fire interval 1 second.
         // Calculate the recoil
         float recoil = std::cos(turret_rotation_ - rotation_);
-        momentum_ -= recoil;
+        momentum_ -= recoil * 0.5f;
       }
     }
   }
