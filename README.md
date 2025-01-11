@@ -30,7 +30,7 @@ git clone https://github.com/microsoft/vcpkg.git
 
 在进行 CMake 配置阶段，你需要使用`-DCMAKE_TOOLCHAIN_FILE={vcpkg path}/scripts/buildsystems/vcpkg.cmake`参数指定 vcpkg 的 CMake 配置文件。
 
-即 `cmake -S {repo path} -B {build path} -DCMAKE_TOOLCHAIN_FILE={vcpkg path}/scripts/buildsystems/vcpkg.cmake`
+即 `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake`
 
 项目的其他依赖还包括：
 
