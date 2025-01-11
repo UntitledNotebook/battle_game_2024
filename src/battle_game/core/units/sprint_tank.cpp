@@ -207,10 +207,10 @@ bool Sprint::IsHit(glm::vec2 position) const {
 }
 
 const char *Sprint::UnitName() const {
-  return "Tiny Tank";
+  return "Sprint Tank";
 }
 
 const char *Sprint::Author() const {
-  return "LazyJazz";
+  return "UntitledNotebook";
 }
 }  // namespace battle_game::unit
